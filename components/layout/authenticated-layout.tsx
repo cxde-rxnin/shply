@@ -16,7 +16,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-black">
       <AppSidebar />
       <div className="md:ml-20 pb-16 md:pb-0">{children}</div>
     </div>

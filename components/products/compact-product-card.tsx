@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/lib/auth-context"
 import { toast } from "sonner"
 import Link from "next/link"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface CompactProductCardProps {
   product: Product
@@ -18,6 +19,7 @@ interface CompactProductCardProps {
 
 export function CompactProductCard({ product, onAddToCart }: CompactProductCardProps) {
   const { user } = useAuth()
+  const isMobile = useIsMobile()
   const [isInWishlist, setIsInWishlist] = useState(product.in_wishlist || false)
   const [wishlistId, setWishlistId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -113,7 +115,7 @@ export function CompactProductCard({ product, onAddToCart }: CompactProductCardP
     <motion.div
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
-      className="group relative overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-md hover:shadow-xl transition-all duration-300 border border-purple-100"
+      className="group relative overflow-hidden rounded-xl bg-black border border-purple-500/20 shadow-md hover:shadow-xl transition-all duration-300"
     >
       <div className="absolute top-2 right-2 z-10">
         <Button
@@ -159,7 +161,7 @@ export function CompactProductCard({ product, onAddToCart }: CompactProductCardP
       <div className="p-3">
         <Link href={`/products/${product.id}`}>
           <div className="flex items-start justify-between mb-1">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">{product.name}</h3>
+            <h3 className="text-sm font-semibold text-white line-clamp-1">{product.name}</h3>
             {product.category && (
               <Badge variant="secondary" className="text-xs ml-1">
                 {product.category.name}
@@ -167,30 +169,30 @@ export function CompactProductCard({ product, onAddToCart }: CompactProductCardP
             )}
           </div>
 
-          <p className="text-xs text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">{product.description}</p>
+          <p className="text-xs text-gray-300 mb-2 line-clamp-2">{product.description}</p>
         </Link>
 
         {/* Rating */}
         {product.review_count && product.review_count > 0 ? (
           <div className="flex items-center gap-1 mb-2">
             <div className="flex items-center">{renderStars(product.average_rating || 0)}</div>
-            <span className="text-xs text-gray-600 dark:text-gray-300">({product.review_count})</span>
+            <span className="text-xs text-gray-300">({product.review_count})</span>
           </div>
         ) : (
           <div className="h-4 mb-2" />
         )}
 
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-bold text-purple-600 dark:text-purple-400">${product.price.toFixed(2)}</span>
+        <div className="flex flex-col gap-2">
+          <span className="text-lg font-bold text-purple-400">${product.price.toFixed(2)}</span>
 
           <Button
             onClick={() => onAddToCart(product.id)}
             size="sm"
-            className="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white h-8 px-3"
+            className="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white h-8"
             disabled={product.stock_quantity === 0}
           >
             <ShoppingCart className="h-3 w-3 mr-1" />
-            Add
+            {isMobile ? "" : "Add"}
           </Button>
         </div>
       </div>

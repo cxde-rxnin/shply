@@ -180,7 +180,7 @@ export function SettingsComponent() {
               </CardHeader>
               <CardContent>
                 {error && (
-                  <Alert className="mb-6 border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
+                  <Alert className="mb-6 border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-900/20">
                     <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                     <AlertDescription className="text-red-700 dark:text-red-300">{error}</AlertDescription>
                   </Alert>
@@ -207,7 +207,7 @@ export function SettingsComponent() {
                           type="email"
                           value={profileData.email}
                           disabled={true}
-                          className="bg-gray-100"
+                          className="bg-black/5 dark:bg-black/40"
                         />
                         <p className="text-xs text-gray-500">Email cannot be changed</p>
                       </div>
@@ -256,7 +256,7 @@ export function SettingsComponent() {
               </CardHeader>
               <CardContent>
                 {error && (
-                  <Alert className="mb-6 border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
+                  <Alert className="mb-6 border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-900/20">
                     <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                     <AlertDescription className="text-red-700 dark:text-red-300">{error}</AlertDescription>
                   </Alert>

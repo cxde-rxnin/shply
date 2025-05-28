@@ -141,7 +141,7 @@ export function WishlistComponent() {
           transition={{ duration: 0.5 }}
           className="text-center py-16"
         >
-          <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+          <div className="w-20 h-20 mx-auto mb-6 bg-black/5 dark:bg-black/40 rounded-full flex items-center justify-center">
             <Heart className="h-10 w-10 text-gray-400" />
           </div>
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Your wishlist is empty</h2>

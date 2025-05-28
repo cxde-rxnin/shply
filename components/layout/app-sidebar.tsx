@@ -133,7 +133,7 @@ export function AppSidebar() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-lg border-t border-white/10 md:hidden z-30">
+      <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-lg border-t border-white/10 md:hidden z-30">
         <div className="flex items-center justify-around py-2">
           {filteredItems.slice(0, 5).map((item) => {
             const isActive = pathname === item.href

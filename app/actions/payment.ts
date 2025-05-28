@@ -1,5 +1,6 @@
 "use server"
 
+import { supabase } from "@/lib/supabase"
 import type { FlutterwavePaymentData } from "@/lib/flutterwave"
 
 export async function initializePayment(paymentData: FlutterwavePaymentData) {
@@ -74,5 +75,62 @@ export async function verifyPayment(transactionId: string) {
       success: false,
       error: "Failed to verify payment",
     }
+  }
+}
+
+export async function clearCart(userId: string) {
+  try {
+    const { error } = await supabase.from("cart").delete().eq("user_id", userId)
+
+    if (error) throw error
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error clearing cart:", error)
+    return { success: false }
+  }
+}
+
+export async function createOrder(orderData: {
+  user_id: string
+  total_amount: number
+  payment_reference: string
+  cart_items: Array<{
+    product_id: string
+    quantity: number
+    price: number
+  }>
+}) {
+  try {
+    // Create order
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert({
+        user_id: orderData.user_id,
+        total_amount: orderData.total_amount,
+        payment_reference: orderData.payment_reference,
+        status: "processing",
+      })
+      .select()
+      .single()
+
+    if (orderError) throw orderError
+
+    // Create order items
+    const orderItems = orderData.cart_items.map((item) => ({
+      order_id: order.id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      price: item.price,
+    }))
+
+    const { error: itemsError } = await supabase.from("order_items").insert(orderItems)
+
+    if (itemsError) throw itemsError
+
+    return { success: true, order }
+  } catch (error) {
+    console.error("Error creating order:", error)
+    return { success: false }
   }
 }

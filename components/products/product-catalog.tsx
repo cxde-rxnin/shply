@@ -143,9 +143,9 @@ export function ProductCatalog() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className="animate-pulse">
-              <div className="aspect-square bg-gray-200 dark:bg-gray-700 rounded-xl mb-3"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+              <div className="aspect-square bg-black/10 dark:bg-black/40 rounded-xl mb-3"></div>
+              <div className="h-3 bg-black/10 dark:bg-black/40 rounded mb-2"></div>
+              <div className="h-3 bg-black/10 dark:bg-black/40 rounded w-2/3"></div>
             </div>
           ))}
         </div>
