@@ -1,7 +1,8 @@
 "use client"
 import { useEffect, useState } from "react"
 import type { Product } from "@/lib/types"
-import { ProductCard } from "./enhanced-product-card"
+import { CompactProductCard } from "./compact-product-card"
+import { ProductSearch } from "./product-search"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { motion } from "framer-motion"
@@ -10,15 +11,31 @@ import { useAuth } from "@/lib/auth-context"
 export function ProductCatalog() {
   const { user } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     fetchProducts()
-  }, [])
+  }, [user])
+
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const filtered = products.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.category?.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+      setFilteredProducts(filtered)
+    } else {
+      setFilteredProducts(products)
+    }
+  }, [products, searchQuery])
 
   const fetchProducts = async () => {
     try {
-      const { data, error } = await supabase
+      const query = supabase
         .from("products")
         .select(`
           *,
@@ -34,10 +51,12 @@ export function ProductCatalog() {
         .eq("is_active", true)
         .order("created_at", { ascending: false })
 
+      const { data, error } = await query
+
       if (error) throw error
 
       // Calculate average rating for each product
-      const productsWithRatings =
+      let productsWithRatings =
         data?.map((product) => ({
           ...product,
           average_rating:
@@ -46,6 +65,19 @@ export function ProductCatalog() {
               : 0,
           review_count: product.reviews?.length || 0,
         })) || []
+
+      // If user is logged in, check wishlist status
+      if (user?.id) {
+        const { data: wishlistItems } = await supabase.from("wishlist").select("product_id").eq("user_id", user.id)
+
+        if (wishlistItems) {
+          const wishlistProductIds = new Set(wishlistItems.map((item) => item.product_id))
+          productsWithRatings = productsWithRatings.map((product) => ({
+            ...product,
+            in_wishlist: wishlistProductIds.has(product.id),
+          }))
+        }
+      }
 
       setProducts(productsWithRatings)
     } catch (error) {
@@ -97,15 +129,23 @@ export function ProductCatalog() {
     }
   }
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+  }
+
+  const handleClearSearch = () => {
+    setSearchQuery("")
+  }
+
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {Array.from({ length: 8 }).map((_, i) => (
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className="animate-pulse">
-              <div className="aspect-square bg-gray-200 dark:bg-gray-700 rounded-xl mb-4"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+              <div className="aspect-square bg-gray-200 dark:bg-gray-700 rounded-xl mb-3"></div>
+              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
             </div>
           ))}
         </div>
@@ -114,33 +154,56 @@ export function ProductCatalog() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-24">
+    <div className="container mx-auto px-4 py-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-center mb-12"
+        className="mb-8"
       >
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Premium Product Catalog</h1>
-        <p className="text-xl text-gray-600 dark:text-gray-300">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 text-center">Premium Product Catalog</h1>
+        <p className="text-lg text-gray-600 dark:text-gray-300 text-center mb-6">
           Discover our curated collection of high-quality products
         </p>
+
+        <div className="max-w-md mx-auto">
+          <ProductSearch
+            onSearch={handleSearch}
+            onClear={handleClearSearch}
+            placeholder="Search products, categories..."
+          />
+        </div>
+
+        {searchQuery && (
+          <div className="text-center mt-4">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {filteredProducts.length} result{filteredProducts.length !== 1 ? "s" : ""} for "{searchQuery}"
+            </p>
+          </div>
+        )}
       </motion.div>
 
-      {products.length === 0 ? (
+      {filteredProducts.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-gray-600 dark:text-gray-300 text-lg">No products available at the moment.</p>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">
+            {searchQuery ? "No products found matching your search." : "No products available at the moment."}
+          </p>
+          {searchQuery && (
+            <button onClick={handleClearSearch} className="text-purple-600 hover:text-purple-800 mt-2 underline">
+              Clear search
+            </button>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product, index) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {filteredProducts.map((product, index) => (
             <motion.div
               key={product.id}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
             >
-              <ProductCard product={product} onAddToCart={handleAddToCart} />
+              <CompactProductCard product={product} onAddToCart={handleAddToCart} />
             </motion.div>
           ))}
         </div>

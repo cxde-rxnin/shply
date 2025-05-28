@@ -5,6 +5,8 @@ export interface User {
   role: "customer" | "admin"
   created_at: string
   updated_at: string
+  address?: string
+  phone?: string
 }
 
 export interface Category {
@@ -30,6 +32,7 @@ export interface Product {
   reviews?: Review[]
   average_rating?: number
   review_count?: number
+  in_wishlist?: boolean
 }
 
 export interface CartItem {
@@ -37,6 +40,14 @@ export interface CartItem {
   user_id: string
   product_id: string
   quantity: number
+  created_at: string
+  product?: Product
+}
+
+export interface WishlistItem {
+  id: string
+  user_id: string
+  product_id: string
   created_at: string
   product?: Product
 }
@@ -73,25 +84,4 @@ export interface Review {
   created_at: string
   updated_at: string
   user?: User
-}
-
-// Add NextAuth type augmentation for TypeScript
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string
-      name?: string | null
-      email?: string | null
-      image?: string | null
-      role?: string
-    }
-  }
-
-  interface User {
-    id: string
-    name?: string | null
-    email?: string | null
-    image?: string | null
-    role?: string
-  }
 }
