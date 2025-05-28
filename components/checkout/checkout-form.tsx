@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { initializePayment } from "@/app/actions/payment"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
 
 interface CheckoutFormProps {
   totalAmount: number
@@ -19,10 +20,11 @@ interface CheckoutFormProps {
 }
 
 export function CheckoutForm({ totalAmount, items }: CheckoutFormProps) {
+  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [customerInfo, setCustomerInfo] = useState({
-    name: "",
-    email: "",
+    name: user?.name || "",
+    email: user?.email || "",
     address: "",
   })
   const router = useRouter()

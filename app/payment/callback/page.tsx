@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, XCircle, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
+import { ProtectedRoute } from "@/components/auth/protected-route"
 
 export default function PaymentCallbackPage() {
   const searchParams = useSearchParams()
@@ -110,13 +111,15 @@ export default function PaymentCallbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-center">Payment Status</CardTitle>
-        </CardHeader>
-        <CardContent>{renderContent()}</CardContent>
-      </Card>
-    </div>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center">Payment Status</CardTitle>
+          </CardHeader>
+          <CardContent>{renderContent()}</CardContent>
+        </Card>
+      </div>
+    </ProtectedRoute>
   )
 }

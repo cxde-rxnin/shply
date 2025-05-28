@@ -1,6 +1,5 @@
 "use client"
 import { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,18 +11,19 @@ import { toast } from "sonner"
 import type { CartItem } from "@/lib/types"
 import Image from "next/image"
 import Link from "next/link"
+import { useAuth } from "@/lib/auth-context"
 
 export function ShoppingCartComponent() {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
 
   useEffect(() => {
-    if (session?.user?.id) {
+    if (user?.id) {
       fetchCartItems()
     }
-  }, [session])
+  }, [user])
 
   const fetchCartItems = async () => {
     try {
@@ -40,7 +40,7 @@ export function ShoppingCartComponent() {
             stock_quantity
           )
         `)
-        .eq("user_id", session?.user?.id)
+        .eq("user_id", user?.id)
         .order("created_at", { ascending: false })
 
       if (error) throw error

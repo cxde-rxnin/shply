@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { useSession, signOut } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,17 +11,19 @@ import { User, ShoppingBag, Star, LogOut, Package } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import type { Order } from "@/lib/types"
+import { useAuth } from "@/lib/auth-context"
 
 export function UserProfile() {
-  const { data: session } = useSession()
+  const { user, signOut } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
-    if (session?.user?.id) {
+    if (user?.id) {
       fetchUserOrders()
     }
-  }, [session])
+  }, [user])
 
   const fetchUserOrders = async () => {
     try {
@@ -34,7 +36,7 @@ export function UserProfile() {
             product:products(*)
           )
         `)
-        .eq("user_id", session?.user?.id)
+        .eq("user_id", user?.id)
         .order("created_at", { ascending: false })
 
       if (error) throw error
@@ -49,8 +51,9 @@ export function UserProfile() {
 
   const handleSignOut = async () => {
     try {
-      await signOut({ callbackUrl: "/" })
+      await signOut()
       toast.success("Signed out successfully")
+      router.push("/")
     } catch (error) {
       toast.error("Failed to sign out")
     }
@@ -86,14 +89,14 @@ export function UserProfile() {
             <div className="flex items-end gap-4 -mt-16 mb-4">
               <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
                 <AvatarFallback className="text-2xl font-bold bg-white text-indigo-600">
-                  {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
+                  {user?.name?.charAt(0)?.toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="pb-2">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{session?.user?.name || "User"}</h1>
-                <p className="text-gray-600 dark:text-gray-300">{session?.user?.email}</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{user?.name || "User"}</h1>
+                <p className="text-gray-600 dark:text-gray-300">{user?.email}</p>
                 <Badge variant="secondary" className="mt-1">
-                  {session?.user?.role === "admin" ? "Administrator" : "Customer"}
+                  {user?.role === "admin" ? "Administrator" : "Customer"}
                 </Badge>
               </div>
               <div className="ml-auto pb-2">
@@ -212,13 +215,13 @@ export function UserProfile() {
                     <h3 className="font-semibold mb-2">Personal Information</h3>
                     <div className="space-y-2 text-sm">
                       <p>
-                        <span className="font-medium">Name:</span> {session?.user?.name}
+                        <span className="font-medium">Name:</span> {user?.name}
                       </p>
                       <p>
-                        <span className="font-medium">Email:</span> {session?.user?.email}
+                        <span className="font-medium">Email:</span> {user?.email}
                       </p>
                       <p>
-                        <span className="font-medium">Role:</span> {session?.user?.role}
+                        <span className="font-medium">Role:</span> {user?.role}
                       </p>
                     </div>
                   </div>

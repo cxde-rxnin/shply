@@ -1,18 +1,21 @@
 "use client"
 import { useState } from "react"
-import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { toast } from "sonner"
 import { motion } from "framer-motion"
-import { ShoppingBag, Mail, Lock, User } from "lucide-react"
+import { ShoppingBag, Mail, Lock, User, AlertCircle } from "lucide-react"
+import { useAuth } from "@/lib/auth-context"
 
 export function AuthForm() {
+  const { signIn, signUp } = useAuth()
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -22,29 +25,42 @@ export function AuthForm() {
 
   const handleSubmit = async (isSignUp: boolean) => {
     setLoading(true)
+    setError("")
+
+    // Basic validation
+    if (!formData.email || !formData.password) {
+      setError("Please fill in all required fields")
+      setLoading(false)
+      return
+    }
+
+    if (isSignUp && !formData.name) {
+      setError("Please enter your name")
+      setLoading(false)
+      return
+    }
 
     try {
-      const result = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
-        name: formData.name,
-        isSignUp: isSignUp.toString(),
-        redirect: false,
-      })
-
-      if (result?.error) {
-        console.error("Auth error:", result.error)
-        toast.error(isSignUp ? "Failed to create account. Please try again." : "Invalid email or password")
-      } else if (result?.ok) {
-        toast.success(isSignUp ? "Account created successfully!" : "Welcome back!")
-        router.push("/products")
-        router.refresh()
+      if (isSignUp) {
+        const result = await signUp(formData.email, formData.name, formData.password)
+        if (result.success) {
+          toast.success("Account created successfully!")
+          router.push("/products")
+        } else {
+          setError(result.error || "Failed to create account")
+        }
       } else {
-        toast.error("Authentication failed. Please try again.")
+        const result = await signIn(formData.email, formData.password)
+        if (result.success) {
+          toast.success("Welcome back!")
+          router.push("/products")
+        } else {
+          setError(result.error || "Invalid email or password")
+        }
       }
     } catch (error) {
       console.error("Authentication error:", error)
-      toast.error("Something went wrong. Please try again.")
+      setError("Something went wrong. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -69,6 +85,13 @@ export function AuthForm() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {error && (
+            <Alert className="mb-4 border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
+              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+              <AlertDescription className="text-red-700 dark:text-red-300">{error}</AlertDescription>
+            </Alert>
+          )}
+
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -88,6 +111,7 @@ export function AuthForm() {
                   onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                   placeholder="Enter your email"
                   className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -103,6 +127,7 @@ export function AuthForm() {
                   onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
                   placeholder="Enter your password"
                   className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -113,6 +138,10 @@ export function AuthForm() {
               >
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
+
+              <div className="text-center text-sm text-gray-600 dark:text-gray-300">
+                Test accounts: admin@example.com/admin123 or user@example.com/user123
+              </div>
             </TabsContent>
 
             <TabsContent value="signup" className="space-y-4">
@@ -128,6 +157,7 @@ export function AuthForm() {
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="Enter your full name"
                   className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -143,6 +173,7 @@ export function AuthForm() {
                   onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
                   placeholder="Enter your email"
                   className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -158,6 +189,7 @@ export function AuthForm() {
                   onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
                   placeholder="Create a password"
                   className="h-11"
+                  disabled={loading}
                 />
               </div>
 

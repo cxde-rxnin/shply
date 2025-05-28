@@ -1,14 +1,14 @@
 "use client"
 import { useEffect, useState } from "react"
-import { useSession } from "next-auth/react"
 import type { Product } from "@/lib/types"
 import { ProductCard } from "./enhanced-product-card"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { motion } from "framer-motion"
+import { useAuth } from "@/lib/auth-context"
 
 export function ProductCatalog() {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -57,7 +57,7 @@ export function ProductCatalog() {
   }
 
   const handleAddToCart = async (productId: string) => {
-    if (!session?.user?.id) {
+    if (!user?.id) {
       toast.error("Please sign in to add items to cart")
       return
     }
@@ -67,7 +67,7 @@ export function ProductCatalog() {
       const { data: existingItem } = await supabase
         .from("cart")
         .select("*")
-        .eq("user_id", session.user.id)
+        .eq("user_id", user.id)
         .eq("product_id", productId)
         .single()
 
@@ -82,7 +82,7 @@ export function ProductCatalog() {
       } else {
         // Add new item
         const { error } = await supabase.from("cart").insert({
-          user_id: session.user.id,
+          user_id: user.id,
           product_id: productId,
           quantity: 1,
         })

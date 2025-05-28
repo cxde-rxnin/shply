@@ -1,5 +1,6 @@
 import { AdminDashboard } from "@/components/admin/admin-dashboard"
 import { FloatingNav } from "@/components/ui/floating-navbar"
+import { ProtectedRoute } from "@/components/auth/protected-route"
 import { Home, Package, ShoppingBag, Users, BarChart3 } from "lucide-react"
 
 const navItems = [
@@ -12,9 +13,11 @@ const navItems = [
 
 export default function AdminPage() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <FloatingNav navItems={navItems} />
-      <AdminDashboard />
-    </div>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <FloatingNav navItems={navItems} />
+        <AdminDashboard />
+      </div>
+    </ProtectedRoute>
   )
 }

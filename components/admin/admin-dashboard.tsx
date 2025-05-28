@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Plus, Package, ShoppingBag, Users, DollarSign } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { motion } from "framer-motion"
+import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "next/navigation"
 
 interface DashboardStats {
   totalProducts: number
@@ -14,6 +16,8 @@ interface DashboardStats {
 }
 
 export function AdminDashboard() {
+  const { user } = useAuth()
+  const router = useRouter()
   const [stats, setStats] = useState<DashboardStats>({
     totalProducts: 0,
     totalOrders: 0,
@@ -23,8 +27,14 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Check if user is admin
+    if (user?.role !== "admin") {
+      router.push("/")
+      return
+    }
+
     fetchDashboardStats()
-  }, [])
+  }, [user, router])
 
   const fetchDashboardStats = async () => {
     try {
